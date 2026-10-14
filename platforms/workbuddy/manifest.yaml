@@ -1,0 +1,14 @@
+name: offer-skill
+version: 0.1.0
+display_name: 万事达信用卡权益 Skill
+entry: ../../SKILL.md
+runtime:
+  shell_detection: ../../scripts/env-check.sh
+  windows_shell_detection: ../../scripts/env-check.ps1
+permissions:
+  - read_local_skill_files
+  - write_local_config
+  - network_curl_only
+notes:
+  - "本清单只描述平台元数据，不复制业务逻辑。"
+  - "平台导入和审核时应向用户说明 Shell、网络和本地文件权限。"

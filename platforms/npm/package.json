@@ -1,0 +1,15 @@
+{
+  "name": "offer-skill",
+  "version": "0.1.0",
+  "private": true,
+  "files": [
+    "../../SKILL.md",
+    "../../scripts",
+    "../../sub-skills",
+    "../../config/client.conf",
+    "../../config/tags.txt",
+    "../../config/regions.txt",
+    "../../config/banks.txt"
+  ],
+  "license": "MIT"
+}

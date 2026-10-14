@@ -1,0 +1,11 @@
+.idea/
+config/*.tmp
+config/*.pending
+config/data/req/*
+!config/data/req/.gitkeep
+config/data/res/*
+!config/data/res/.gitkeep
+test
+.DS_Store
+Thumbs.db
+*.log
