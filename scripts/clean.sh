@@ -4,7 +4,7 @@ EXIT_INVALID=14
 REQUEST_ID=""
 
 usage() {
-    printf '%s\n' 'Usage: cleanup-data.sh --request-id EVENT_ID'
+    printf '%s\n' 'Usage: clean.sh --request-id EVENT_ID'
 }
 
 while [ "$#" -gt 0 ]; do

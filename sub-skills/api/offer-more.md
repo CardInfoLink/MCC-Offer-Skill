@@ -1,80 +1,42 @@
 # Offer 分页接口
 
-## 能力用途
-
-获取查询或相似推荐的下一页。缓存失效时服务端会使用原始条件重新匹配，并返回第 1 页，不要求用户重新表达需求。
+获取查询或相似推荐的下一页。缓存失效时服务端用请求里携带的原始条件重新匹配并返回第 1 页，不需要用户重新表达需求。
 
 ## 调用契约
 
-- Method: `POST`
-- Path key: `API_MORE_PATH`
-- Default path: `/api/offer/more`
-- Content-Type: `application/json`
-- pageSize 固定为 10，不能传 `pageSize`。
+- Method：`POST`　Content-Type：`application/json`
+- 路径键：`API_MORE_PATH`（默认 `/api/offer/more`）
+- 脚本：按 `../common.md` 的“调用模板”，请求 ID 前缀 `more`
+- 每页固定 5 条，**不能传 `pageSize`**。
 
 ## 请求
 
-查询场景：
+必须带上首次请求的全部条件，**不能只传 `queryCacheId` 和 `page`**。用不到的字段传空串、空数组或 `null`：
+
+| 首次是 | `searchInfo` | `intentTags` | `filters` | `baseOfferId` |
+|---|---|---|---|---|
+| 查询词查询 | 原词 | `[]` | 原条件 | `""` |
+| 标签查询 | `""` | 原标签 | 原条件 | `""` |
+| 无主题查询 | `""` | `[]` | 原条件 | `""` |
+| 相似推荐 | `""` | `[]` | `null` | 基准 `offerId` |
 
 ```json
 {
   "queryCacheId":"cache_123456",
   "page":2,
-  "intentTags":[{"tagName":"温泉度假","matchScore":85}],
-  "filters":{"banks":["ABC"],"regions":["香港"]},
+  "searchInfo":"星巴克",
+  "intentTags":[],
+  "filters":{"regions":["香港"]},
   "baseOfferId":""
 }
 ```
 
-推荐场景：
+## 响应与处理
 
-```json
-{
-  "queryCacheId":"cache_123456",
-  "page":2,
-  "intentTags":[],
-  "filters":null,
-  "baseOfferId":"507f1f77bcf86cd799439011"
-}
-```
+| 返回 | 含义 | 怎么做 |
+|---|---|---|
+| `isDefault=false`，`currentPage` 等于请求的 `page` | 正常的下一页 | 展示，更新状态 |
+| `isDefault=false`，`currentPage=1` 而请求 `page>1` | 缓存过期，服务端已重新匹配 | 按第 1 页展示，**换用新的 `queryCacheId`**，不要说页号 |
+| `isDefault=true` | 没有更多符合条件的权益（页号越界，或重新匹配后没有结果） | 返回 ≤3 条参考推荐，无 `queryCacheId`，不再提供“更多”；说明见 `../result.md` |
 
-## 通过脚本调用
-
-POSIX：
-
-```sh
-REQUEST_JSON='{"queryCacheId":"cache_123456","page":2,"intentTags":[{"tagName":"温泉度假","matchScore":85}],"filters":null,"baseOfferId":""}'
-# AI 已从 config/client.conf 读取 API_BASE_URL 和 API_MORE_PATH。
-API_BASE_URL='<API_BASE_URL from client.conf>'
-API_PATH='<API_MORE_PATH from client.conf>'
-
-sh scripts/api-call.sh \
-  --method POST \
-  --url "${API_BASE_URL}${API_PATH}" \
-  --data "$REQUEST_JSON" \
-  --request-id "more-$(date +%Y%m%d%H%M%S)-$$"
-```
-
-PowerShell：
-
-```powershell
-$requestJson = '{"queryCacheId":"cache_123456","page":2,"intentTags":[{"tagName":"温泉度假","matchScore":85}],"filters":null,"baseOfferId":""}'
-# AI 已从 config/client.conf 读取 API_BASE_URL 和 API_MORE_PATH。
-$apiBaseUrl = '<API_BASE_URL from client.conf>'
-$apiPath = '<API_MORE_PATH from client.conf>'
-
-$requestId = 'more-' + (Get-Date).ToString('yyyyMMddHHmmss') + '-' + $PID
-
-& .\scripts\api-call.ps1 `
-  -Method POST `
-  -Url ($apiBaseUrl + $apiPath) `
-  -Data $requestJson `
-  -RequestId $requestId
-```
-
-调用完成后，读取脚本标准输出中的 `RESPONSE_FILE`，再解析其中的原始响应。
-
-## 状态和响应
-- 以响应的 `queryCacheId`、`currentPage`、`totalPages`、`hasMore` 为准。
-- 缓存过期重匹配时，`currentPage` 通常为 1，必须替换旧的缓存 ID。
-- 保存首次查询的 `intentTags`/`filters`，推荐场景保存 `baseOfferId`；不能只保存 queryCacheId。
+以响应里的 `queryCacheId`、`currentPage`、`totalPages`、`hasMore` 更新会话状态；条件不丢，推荐场景的 `baseOfferId` 也不丢。

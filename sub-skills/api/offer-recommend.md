@@ -1,15 +1,12 @@
 # Offer 相似推荐接口
 
-## 能力用途
-
-根据当前已确定的 Offer ID 查找相似权益。服务端使用基准 Offer 的标签进行推荐，并排除基准 Offer 自身。
+根据已确定的 Offer ID 查找相似权益。服务端用基准 Offer 的标签推荐，**结果和兜底都排除基准 Offer 自身**。
 
 ## 调用契约
 
-- Method: `POST`
-- Path key: `API_RECOMMEND_PATH`
-- Default path: `/api/offer/recommend`
-- Content-Type: `application/json`
+- Method：`POST`　Content-Type：`application/json`
+- 路径键：`API_RECOMMEND_PATH`（默认 `/api/offer/recommend`）
+- 脚本：按 `../common.md` 的“调用模板”，请求 ID 前缀 `recommend`
 
 ## 请求
 
@@ -17,46 +14,11 @@
 {"baseOfferId":"507f1f77bcf86cd799439011"}
 ```
 
-`baseOfferId` 必须来自当前对话中的详情或列表结果，不要让用户输入无法确认的任意 ID 后直接调用。
+`baseOfferId` 必须来自当前对话里的详情或列表，不让用户输入无法确认的任意 ID 后直接调用。只传这一个字段，不传 `intentTags`、`searchInfo` 或 `filters`。
 
-## 通过脚本调用
+## 响应与处理
 
-POSIX：
+响应字段与查询接口相同：`offers`、`totalCount`、`queryCacheId`、`currentPage`、`totalPages`、`hasMore`、`isDefault`。
 
-```sh
-REQUEST_JSON='{"baseOfferId":"507f1f77bcf86cd799439011"}'
-# AI 已从 config/client.conf 读取 API_BASE_URL 和 API_RECOMMEND_PATH。
-API_BASE_URL='<API_BASE_URL from client.conf>'
-API_PATH='<API_RECOMMEND_PATH from client.conf>'
-
-sh scripts/api-call.sh \
-  --method POST \
-  --url "${API_BASE_URL}${API_PATH}" \
-  --data "$REQUEST_JSON" \
-  --request-id "recommend-$(date +%Y%m%d%H%M%S)-$$"
-```
-
-PowerShell：
-
-```powershell
-$requestJson = '{"baseOfferId":"507f1f77bcf86cd799439011"}'
-# AI 已从 config/client.conf 读取 API_BASE_URL 和 API_RECOMMEND_PATH。
-$apiBaseUrl = '<API_BASE_URL from client.conf>'
-$apiPath = '<API_RECOMMEND_PATH from client.conf>'
-
-$requestId = 'recommend-' + (Get-Date).ToString('yyyyMMddHHmmss') + '-' + $PID
-
-& .\scripts\api-call.ps1 `
-  -Method POST `
-  -Url ($apiBaseUrl + $apiPath) `
-  -Data $requestJson `
-  -RequestId $requestId
-```
-
-调用完成后，读取脚本标准输出中的 `RESPONSE_FILE`，再解析其中的原始响应。
-
-## 响应和状态`offers`、`totalCount`、`queryCacheId`、`currentPage`、`totalPages`、`hasMore`、`isDefault`。
-
-- 保存 `queryCacheId`、当前页和 `baseOfferId`，供 `more.md` 使用。
-- `isDefault=true` 时说明是通用推荐，不是精确相似匹配。
-- `F010004` 表示基准 Offer 不存在、已删除或已过期。
+- 正常：按服务端顺序展示；保存 `queryCacheId`、当前页和 `baseOfferId`，后续“更多”转 `more.md`。
+- `isDefault=true`：基准 Offer 不存在、已删除、已过期，或没有相似项。服务端不报错，返回 ≤3 条默认推荐，无 `queryCacheId`；按 `../result.md` 的场景表说明。

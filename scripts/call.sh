@@ -17,7 +17,7 @@ REQUEST_ID=""
 OUTPUT_FILE=""
 
 usage() {
-    printf '%s\n' 'Usage: api-call.sh --method METHOD --url URL [--data JSON|--data-file FILE] [--request-id ID] [--output-file FILE] [--timeout SECONDS] [--retry COUNT]'
+    printf '%s\n' 'Usage: call.sh --method METHOD --url URL [--data JSON|--data-file FILE] [--request-id ID] [--output-file FILE] [--timeout SECONDS] [--retry COUNT]'
 }
 
 while [ "$#" -gt 0 ]; do
@@ -75,7 +75,7 @@ else
 fi
 
 TMP_ROOT=${TMPDIR:-/tmp}
-TMP_DIR="$TMP_ROOT/offer-skill-api-call.$$"
+TMP_DIR="$TMP_ROOT/offer-skill-call.$$"
 if ! (umask 077 && mkdir "$TMP_DIR") 2>/dev/null; then
     printf '%s\n' 'TEMP_DIR_CREATE_FAILED' >&2
     exit "$EXIT_NETWORK"

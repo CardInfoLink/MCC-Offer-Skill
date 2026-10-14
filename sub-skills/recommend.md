@@ -1,28 +1,26 @@
 # 相似推荐能力
 
-## 能力定位
-
-处理“还有类似的吗”的相似推荐链路。主 `SKILL.md` 已完成场景路由，本能力直接使用已确认的 `baseOfferId`。
+处理“还有类似的吗”。场景路由已由 `SKILL.md` 完成，本能力直接使用已确认的 `baseOfferId`。
 
 ## 依赖
 
-按顺序读取：
-
-1. `_shared.md`：脚本、配置、公共响应和状态保存。
-2. `api/offer-recommend.md`：推荐请求、响应和脚本示例。
-3. `result-template.md`：列表展示规则。
+进入本能力后，在同一轮里一次性并行读完：`common.md`（脚本调用、响应判定、会话状态、清理）、`api/offer-recommend.md`（请求与响应）、`result.md`（列表展示）、`config/client.conf`（接口地址）。同会话已读过且没变的不用重读。
 
 ## 处理流程
 
-1. 从当前详情或列表上下文确认 `baseOfferId`。
-2. 不重新解析用户自然语言标签，不向服务端发送 `intentTags`。
-3. 按 `api/offer-recommend.md` 构造 `{baseOfferId}`，生成带 `recommend-` 前缀的请求 ID，通过 `api-call` 调用接口。
-4. 根据脚本返回的 `RESPONSE_FILE` 读取原始响应，再检查退出码和顶层 `code`。
-5. 按服务端顺序展示推荐列表；`isDefault=true` 时说明是通用推荐。
-6. 保存 `queryCacheId`、当前页和 `baseOfferId`，后续更多转到 `more.md`。
+1. **确定 `baseOfferId`**：优先用当前正在看的详情；否则按用户的指代从最近展示的列表里解析（规则同 `detail.md`）。对应不上就请用户选一个，不猜。
+2. 请求体只有 `{"baseOfferId":"..."}`，不重新解析标签，不发送 `intentTags`、`searchInfo`、`filters`。
+3. 按 `common.md` 的“调用模板”调用，请求 ID 前缀 `recommend`。
+4. 读取 `RESPONSE_FILE`，按 `common.md` 判定响应后按下表处理。
+5. 保存 `queryCacheId`、当前页和 `baseOfferId`；后续“更多”转 `more.md`。
+
+| 响应 | 做法 |
+|---|---|
+| `isDefault=false` | 按服务端顺序展示相似权益；`hasMore=true` 时结尾问是否继续 |
+| `isDefault=true`（基准 Offer 已失效，或没有相似项） | 按 `result.md` 的场景表说明是通用推荐；不提供“更多” |
 
 ## 不允许
 
-- 不把基准 Offer 自己添加到结果中。
+- 不把基准 Offer 自己放进结果（服务端已排除，客户端也不要补）。
 - 不自行补造相似权益。
-- 不丢弃 `baseOfferId`，否则缓存失效时无法重新匹配。
+- 不丢弃 `baseOfferId`，否则缓存失效后无法重新匹配。

@@ -55,7 +55,7 @@ function Emit-Result([string]$HttpStatus, [int]$ExitCode) {
     [Console]::Out.WriteLine("EXIT_CODE=$ExitCode")
 }
 
-$tempDir = Join-Path ([System.IO.Path]::GetTempPath()) ('offer-skill-api-call-' + [guid]::NewGuid().ToString('N'))
+$tempDir = Join-Path ([System.IO.Path]::GetTempPath()) ('offer-skill-call-' + [guid]::NewGuid().ToString('N'))
 $responseTemp = Join-Path $tempDir 'response'
 $errorTemp = Join-Path $tempDir 'error'
 $httpStatus = '000'

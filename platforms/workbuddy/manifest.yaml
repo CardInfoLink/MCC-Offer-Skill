@@ -3,8 +3,8 @@ version: 0.1.0
 display_name: 万事达信用卡权益 Skill
 entry: ../../SKILL.md
 runtime:
-  shell_detection: ../../scripts/env-check.sh
-  windows_shell_detection: ../../scripts/env-check.ps1
+  shell_detection: ../../scripts/init.sh
+  windows_shell_detection: ../../scripts/init.ps1
 permissions:
   - read_local_skill_files
   - write_local_config
