@@ -1,6 +1,6 @@
-# 万事达信用卡权益 Skill
+# MCC Offer Skill
 
-本仓库是由万事达（Mastercard）提供、面向中国大陆用户的信用卡权益 Offer Skill。主 `SKILL.md` 只负责启动和场景路由；具体能力、接口契约、请求留痕和脚本调用示例位于 `sub-skills/`。
+本仓库是 [CardInfoLink/MCC-Offer-Skill](https://github.com/CardInfoLink/MCC-Offer-Skill)，提供由万事达（Mastercard）提供、面向中国大陆用户的信用卡权益 Offer Skill。标准 Skill 标识为 `mcc-offer-skill`，平台发行包统一使用 `mcc-offer-skill/` 作为包目录。
 
 ## 目录
 
@@ -53,3 +53,38 @@ powershell -NoProfile -File scripts\init.ps1 -BaseUrl https://offer.example.com
 ## 安全边界
 
 脚本只把调用方已经组装好的 JSON 原样交给 curl，不执行远程脚本，不下载或覆盖 `scripts/` 与 `sub-skills/`，也不保存密钥。已安装的客户端同步失败时保留本地缓存；首次安装必须同步成功，否则 `init` 返回 `READY=NO` 并停止。接口协议和 AI 解释随 Skill 版本发布，运行时配置只同步纯数据和接口运行参数。
+
+## 平台发行构建
+
+源码仓库只维护一份核心 Skill；平台包由发行脚本从核心目录生成，不在各平台目录复制业务逻辑。所有平台包都排除测试数据、运行时请求/响应、`.kiro/` 和本地状态。
+
+通用 Agent Skills 包：
+
+```bash
+sh tools/release/package.sh --profile testing --platform agent-skill --version 0.1.0-rc.1
+sh tools/release/validate.sh dist/mcc-offer-skill-testing-0.1.0-rc.1
+```
+
+平台包可单独构建，也可以使用 `--platform all` 一次生成：
+
+```powershell
+powershell -NoProfile -File tools\release\package.ps1 -Profile testing -Platform all -Version 0.1.0-rc.1
+```
+
+```sh
+sh tools/release/package.sh --profile testing --platform all --version 0.1.0-rc.1
+```
+
+平台包结构和发现入口：
+
+| 平台 | 发行包入口 | 适配说明 |
+| --- | --- | --- |
+| Claude Code | `.claude-plugin/`、`skills/mcc-offer-skill/SKILL.md` | `platforms/claude-code/README.md` |
+| Cursor | `.cursor/skills/mcc-offer-skill/SKILL.md` | `platforms/cursor/README.md` |
+| OpenClaw | `skills/mcc-offer-skill/SKILL.md` | `platforms/openclaw/README.md` |
+| WorkBuddy | `manifest.yaml`、`SKILL.md` | `platforms/workbuddy/manifest.yaml` |
+| npm | 包根 `package.json`、`SKILL.md` | `platforms/npm/package.json` |
+
+PowerShell 发行脚本会在 npm 平台包可用时额外执行 `npm pack`；POSIX 脚本同样会在检测到 npm 时生成 `.tgz`。npm 仅执行打包，不会自动发布到远端 registry。GitHub Release、CHANGELOG、Issue/PR 模板和 CI 校验位于 `.github/` 与 `docs/releases/`，仓库 Topics 需在 GitHub 仓库设置中维护。
+
+`package` 只读取 `config/client.testing` 或 `config/client.product`，在 `dist/` 中生成独立包目录和 ZIP；不会清空或覆盖源码仓库。

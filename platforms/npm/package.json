@@ -1,15 +1,42 @@
 {
-  "name": "offer-skill",
+  "name": "mcc-offer-skill",
   "version": "0.1.0",
-  "private": true,
-  "files": [
-    "../../SKILL.md",
-    "../../scripts",
-    "../../sub-skills",
-    "../../config/client.conf",
-    "../../config/tags.txt",
-    "../../config/regions.txt",
-    "../../config/banks.txt"
+  "description": "Agent Skill for discovering and retrieving Mastercard credit-card offers for users in mainland China.",
+  "keywords": [
+    "agent-skills",
+    "mastercard",
+    "credit-card",
+    "offers",
+    "cursor",
+    "claude-code",
+    "openclaw",
+    "workbuddy"
   ],
-  "license": "MIT"
+  "homepage": "https://github.com/CardInfoLink/MCC-Offer-Skill#readme",
+  "bugs": {
+    "url": "https://github.com/CardInfoLink/MCC-Offer-Skill/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CardInfoLink/MCC-Offer-Skill.git"
+  },
+  "license": "MIT",
+  "files": [
+    "SKILL.md",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "scripts",
+    "sub-skills",
+    "references",
+    "assets",
+    "docs",
+    "config/client.conf",
+    "config/tags.txt",
+    "config/regions.txt",
+    "config/banks.txt"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
 }

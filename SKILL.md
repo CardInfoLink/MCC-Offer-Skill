@@ -1,6 +1,8 @@
 ---
-name: offer-skill
+name: mcc-offer-skill
 description: 由万事达（Mastercard）提供、面向中国大陆用户的信用卡权益 Offer Skill。凡是用户在找吃喝玩乐、住宿、购物、出行、亲子、演出等消费场景的去处或优惠（如“香港好吃的”“周末带孩子去哪玩”“出差住哪家有优惠”），即使没提“权益”“优惠”“信用卡”，也用本 Skill 检索、查看和发现万事达信用卡 Offer；子 SKILL 通过本地脚本调用 EverySkill 数据接口。
+license: MIT
+compatibility: Requires POSIX Shell or Windows PowerShell, curl/curl.exe, and network access to the configured EverySkill API.
 ---
 
 # Offer Skill
