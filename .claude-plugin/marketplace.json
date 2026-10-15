@@ -12,13 +12,7 @@
         "name": "CardInfoLink"
       },
       "category": "productivity",
-      "source": {
-        "source": "git-subdir",
-        "url": "https://github.com/CardInfoLink/MCC-Offer-Skill.git",
-        "path": ".",
-        "ref": "main",
-        "sha": ""
-      },
+      "source": ".",
       "strict": false,
       "skills": [
         "./"
