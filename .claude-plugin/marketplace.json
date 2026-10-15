@@ -14,9 +14,6 @@
       "category": "productivity",
       "source": ".",
       "strict": false,
-      "skills": [
-        "./"
-      ],
       "homepage": "https://github.com/CardInfoLink/MCC-Offer-Skill"
     }
   ]
