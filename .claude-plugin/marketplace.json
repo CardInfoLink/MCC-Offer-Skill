@@ -1,0 +1,29 @@
+{
+  "name": "mcc-offer-skill-marketplace",
+  "description": "万事达信用卡权益 Skill 插件目录。",
+  "owner": {
+    "name": "CardInfoLink"
+  },
+  "plugins": [
+    {
+      "name": "mcc-offer-skill",
+      "description": "面向中国大陆用户检索和查看万事达信用卡权益 Offer。",
+      "author": {
+        "name": "CardInfoLink"
+      },
+      "category": "productivity",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/CardInfoLink/MCC-Offer-Skill.git",
+        "path": ".",
+        "ref": "MCC-16172-SKILL",
+        "sha": "93f4513f741dac57164c5da94f8cea52091c9395"
+      },
+      "strict": false,
+      "skills": [
+        "./"
+      ],
+      "homepage": "https://github.com/CardInfoLink/MCC-Offer-Skill"
+    }
+  ]
+}

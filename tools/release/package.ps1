@@ -82,7 +82,7 @@ function Build-Package([string]$Kind) {
         'claude-plugin' {
             New-Item -ItemType Directory -Path (Join-Path $packageDir 'skills\mcc-offer-skill') -Force | Out-Null
             Copy-CoreTree (Join-Path $packageDir 'skills\mcc-offer-skill')
-            Copy-Item -LiteralPath (Join-Path $sourceRoot 'platforms\claude-code\.claude-plugin') -Destination $packageDir -Recurse -Force
+            Copy-Item -LiteralPath (Join-Path $sourceRoot '.claude-plugin') -Destination $packageDir -Recurse -Force
             foreach ($file in @('plugin.json', 'marketplace.json')) {
                 $metadataPath = Join-Path $packageDir ".claude-plugin\$file"
                 $content = [System.IO.File]::ReadAllText($metadataPath, [System.Text.Encoding]::UTF8)

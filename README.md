@@ -16,6 +16,7 @@
 - `config/data/req/`：运行时请求体目录，按请求 ID 保存请求文件，不提交 Git。
 - `config/data/res/`：运行时响应体目录，按请求 ID 保存响应文件，不提交 Git。
 - `config/`：API 地址/路径、本地状态和纯数据字典；`client.conf` 随 Skill 提供，首次同步前部分值为空。
+- `platforms/claude-code/README.md`：Claude Code 本地插件、Marketplace 和验收说明；仓库根 `.claude-plugin/` 提供 Claude Code 的发现元数据。
 - `test/`：验证脚本，不属于正式运行时脚本目录。
 
 ## 接口文档位置

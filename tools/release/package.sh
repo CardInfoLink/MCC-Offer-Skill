@@ -74,7 +74,7 @@ new_zip() {
     elif command -v powershell.exe >/dev/null 2>&1 && command -v cygpath >/dev/null 2>&1; then
         archive_win=$(cygpath -w "$OUTPUT_ROOT/$package_name.zip")
         package_win=$(cygpath -w "$package_dir")
-        powershell.exe -NoProfile -Command "Compress-Archive -Path '$package_win' -DestinationPath '$archive_win' -Force"
+        powershell.exe -NoProfile -Command "$ProgressPreference = 'SilentlyContinue'; Compress-Archive -Path '$package_win' -DestinationPath '$archive_win' -Force"
         printf 'ARCHIVE=%s\n' "$OUTPUT_ROOT/$package_name.zip"
     else
         printf '%s\n' 'ZIP_NOT_AVAILABLE'
@@ -99,7 +99,7 @@ build_package() {
         claude-plugin)
             mkdir -p "$package_dir/skills/mcc-offer-skill"
             copy_core_tree "$package_dir/skills/mcc-offer-skill"
-            cp -R "$SOURCE_ROOT/platforms/claude-code/.claude-plugin" "$package_dir/"
+            cp -R "$SOURCE_ROOT/.claude-plugin" "$package_dir/"
             sed -i "s/\"version\": \"0.1.0\"/\"version\": \"$VERSION\"/g" "$package_dir/.claude-plugin/plugin.json" "$package_dir/.claude-plugin/marketplace.json"
             ;;
         cursor)
