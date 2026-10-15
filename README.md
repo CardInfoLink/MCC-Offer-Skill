@@ -55,37 +55,32 @@ powershell -NoProfile -File scripts\init.ps1 -BaseUrl https://offer.example.com
 
 脚本只把调用方已经组装好的 JSON 原样交给 curl，不执行远程脚本，不下载或覆盖 `scripts/` 与 `sub-skills/`，也不保存密钥。已安装的客户端同步失败时保留本地缓存；首次安装必须同步成功，否则 `init` 返回 `READY=NO` 并停止。接口协议和 AI 解释随 Skill 版本发布，运行时配置只同步纯数据和接口运行参数。
 
-## 平台发行构建
+## 仓库检查与平台发现
 
-源码仓库只维护一份核心 Skill；平台包由发行脚本从核心目录生成，不在各平台目录复制业务逻辑。所有平台包都排除测试数据、运行时请求/响应、`.kiro/` 和本地状态。
+源码仓库只维护一份核心 Skill；Claude Code、Cursor、OpenClaw 等平台直接从 GitHub 的分支或 Tag 发现入口，不要求先生成本地发行包。WorkBuddy ZIP、npm 包和 GitHub Release 资产属于后续可选分发渠道，当前不作为 CI 必需步骤。
 
-通用 Agent Skills 包：
+POSIX/Git Bash：
 
 ```bash
-sh tools/release/package.sh --profile testing --platform agent-skill --version 0.1.0-rc.1
-sh tools/release/validate.sh dist/mcc-offer-skill-testing-0.1.0-rc.1
+sh tools/release/check.sh
 ```
 
-平台包可单独构建，也可以使用 `--platform all` 一次生成：
+Windows PowerShell：
 
 ```powershell
-powershell -NoProfile -File tools\release\package.ps1 -Profile testing -Platform all -Version 0.1.0-rc.1
+powershell -NoProfile -File tools\release\check.ps1
 ```
 
-```sh
-sh tools/release/package.sh --profile testing --platform all --version 0.1.0-rc.1
-```
+检查内容包括 Skill frontmatter、根 `.claude-plugin/`、Marketplace source、WorkBuddy/npm 元数据、`config/client.conf` 本地状态、Shell/PowerShell 脚本语法和运行时数据边界。检查不会生成 ZIP、tgz、`dist/` 或其他发行目录。
 
-平台包结构和发现入口：
+平台发现入口：
 
-| 平台 | 发行包入口 | 适配说明 |
+| 平台 | GitHub/运行时入口 | 适配说明 |
 | --- | --- | --- |
-| Claude Code | `.claude-plugin/`、`skills/mcc-offer-skill/SKILL.md` | `platforms/claude-code/README.md` |
+| Claude Code | 根 `.claude-plugin/`、Marketplace `source` | `platforms/claude-code/README.md` |
 | Cursor | `.cursor/skills/mcc-offer-skill/SKILL.md` | `platforms/cursor/README.md` |
 | OpenClaw | `skills/mcc-offer-skill/SKILL.md` | `platforms/openclaw/README.md` |
-| WorkBuddy | `manifest.yaml`、`SKILL.md` | `platforms/workbuddy/manifest.yaml` |
-| npm | 包根 `package.json`、`SKILL.md` | `platforms/npm/package.json` |
+| WorkBuddy | 根 `manifest.yaml`、`SKILL.md` | `platforms/workbuddy/manifest.yaml` |
+| npm | 包根 `package.json`（可选） | `platforms/npm/package.json` |
 
-PowerShell 发行脚本会在 npm 平台包可用时额外执行 `npm pack`；POSIX 脚本同样会在检测到 npm 时生成 `.tgz`。npm 仅执行打包，不会自动发布到远端 registry。GitHub Release、CHANGELOG、Issue/PR 模板和 CI 校验位于 `.github/` 与 `docs/releases/`，仓库 Topics 需在 GitHub 仓库设置中维护。
-
-`package` 只读取 `config/client.testing` 或 `config/client.product`，在 `dist/` 中生成独立包目录和 ZIP；不会清空或覆盖源码仓库。
+GitHub Release、CHANGELOG、Issue/PR 模板和 CI 校验位于 `.github/` 与 `docs/releases/`，仓库 Topics 需在 GitHub 仓库设置中维护。`config/client.conf` 当前由 CI 检查其提交状态为空；运行时可变状态拆分为独立忽略文件仍需单独完成，未在本次检查脚本改造中实现。

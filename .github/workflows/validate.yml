@@ -15,13 +15,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Build platform packages
+      - name: Check repository and platform metadata
         shell: bash
-        run: sh tools/release/package.sh --profile testing --platform all --version 0.1.0-ci
-      - name: Validate generic package
-        shell: bash
-        run: sh tools/release/validate.sh dist/mcc-offer-skill-testing-0.1.0-ci
-      - name: Validate npm package manifest
-        shell: bash
-        working-directory: dist/mcc-offer-skill-npm-testing-0.1.0-ci
-        run: npm pack --dry-run --ignore-scripts
+        run: sh tools/release/check.sh

@@ -16,8 +16,8 @@
         "source": "git-subdir",
         "url": "https://github.com/CardInfoLink/MCC-Offer-Skill.git",
         "path": ".",
-        "ref": "MCC-16172-SKILL",
-        "sha": "93f4513f741dac57164c5da94f8cea52091c9395"
+        "ref": "main",
+        "sha": ""
       },
       "strict": false,
       "skills": [
