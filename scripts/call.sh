@@ -16,6 +16,20 @@ RETRIES=3
 REQUEST_ID=""
 OUTPUT_FILE=""
 
+# Client ID: read LOCAL_CLIENT_ID from config/client.conf and send it as the X-Skill-Client-Id header (used by the server for tracking).
+# Only a 24-char hex value is sent; if it is missing or malformed the header is left out and the server treats the call as anonymous.
+# 清一次 BOM（以防 client.conf 未经过 init.sh 清理）
+CONF_PATH="$SCRIPT_DIR/../config/client.conf"
+first_bytes=$(od -An -tx1 -N3 "$CONF_PATH" 2>/dev/null | tr -d ' \n')
+if [ "$first_bytes" = "efbbbf" ]; then
+    sed -i '1s/^\xEF\xBB\xBF//' "$CONF_PATH" 2>/dev/null
+fi
+CLIENT_ID=$(awk -F= '$1 == "LOCAL_CLIENT_ID" { sub(/^[^=]*=/, ""); print; exit }' "$CONF_PATH" 2>/dev/null | tr -d '\r ')
+case "$CLIENT_ID" in
+    *[!0-9a-fA-F]*) CLIENT_ID="" ;;
+esac
+[ "${#CLIENT_ID}" -eq 24 ] || CLIENT_ID=""
+
 usage() {
     printf '%s\n' 'Usage: call.sh --method METHOD --url URL [--data JSON|--data-file FILE] [--request-id ID] [--output-file FILE] [--timeout SECONDS] [--retry COUNT]'
 }
@@ -91,9 +105,9 @@ while [ "$attempt" -le "$RETRIES" ]; do
     : > "$RESPONSE_TEMP"
     : > "$ERROR_TEMP"
     if [ -n "$DATA" ] || [ -n "$DATA_FILE" ]; then
-        http_status=$(curl -sS -L -X "$METHOD" -H 'Content-Type: application/json' --connect-timeout 5 --max-time "$TIMEOUT" --data-binary "@$REQUEST_FILE" -o "$RESPONSE_TEMP" -w '%{http_code}' "$URL" 2>"$ERROR_TEMP")
+        http_status=$(curl -sS -L -X "$METHOD" -H 'Content-Type: application/json' -H "X-Skill-Client-Id:$CLIENT_ID" --connect-timeout 5 --max-time "$TIMEOUT" --data-binary "@$REQUEST_FILE" -o "$RESPONSE_TEMP" -w '%{http_code}' "$URL" 2>"$ERROR_TEMP")
     else
-        http_status=$(curl -sS -L -X "$METHOD" -H 'Content-Type: application/json' --connect-timeout 5 --max-time "$TIMEOUT" -o "$RESPONSE_TEMP" -w '%{http_code}' "$URL" 2>"$ERROR_TEMP")
+        http_status=$(curl -sS -L -X "$METHOD" -H 'Content-Type: application/json' -H "X-Skill-Client-Id:$CLIENT_ID" --connect-timeout 5 --max-time "$TIMEOUT" -o "$RESPONSE_TEMP" -w '%{http_code}' "$URL" 2>"$ERROR_TEMP")
     fi
     curl_exit=$?
     if [ "$curl_exit" -eq 0 ]; then

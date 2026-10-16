@@ -1,10 +1,10 @@
-# 相似推荐能力
+﻿# 相似推荐能力
 
 处理“还有类似的吗”。场景路由已由 `SKILL.md` 完成，本能力直接使用已确认的 `baseOfferId`。
 
 ## 依赖
 
-进入本能力后，在同一轮里一次性并行读完：`common.md`（脚本调用、响应判定、会话状态、清理）、`api/offer-recommend.md`（请求与响应）、`result.md`（列表展示）、`config/client.conf`（接口地址）。同会话已读过且没变的不用重读。
+进入本能力后，在同一轮里一次性并行读完：`common.md`（脚本调用、响应判定、会话状态、清理）、`references/api-offer-recommend.md`（请求与响应）、`result.md`（列表展示）、`config/client.conf`（接口地址）。同会话已读过且没变的不用重读。
 
 ## 处理流程
 

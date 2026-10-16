@@ -1,15 +1,15 @@
-# 详情能力
+﻿# 详情能力
 
 处理“某个 Offer 的详情”。场景路由已由 `SKILL.md` 完成，本能力不做意图解析，也不依赖 `result.md`（详情的展示规则就在本文件）。
 
 ## 依赖
 
-进入本能力后，在同一轮里一次性并行读完：`common.md`（脚本调用、响应判定、会话状态、清理）、`api/offer-detail.md`（请求与响应字段）、`config/client.conf`（接口地址）。同会话已读过且没变的不用重读。
+进入本能力后，在同一轮里一次性并行读完：`common.md`（脚本调用、响应判定、会话状态、清理）、`references/api-offer-detail.md`（请求与响应字段）、`config/client.conf`（接口地址）。同会话已读过且没变的不用重读。
 
 ## 处理流程
 
 1. **确定 `offerId`**：从会话里最近展示的列表按用户的指代解析：“第 N 个”按序号，“星巴克那个”按商户或标题唯一匹配。对应不上或有多个候选时，列出候选标题请用户选一个，不猜。
-2. 按 `api/offer-detail.md` 用 `GET` 调用，请求 ID 前缀 `detail`。
+2. 按 `references/api-offer-detail.md` 用 `GET` 调用，请求 ID 前缀 `detail`。
 3. 读取 `RESPONSE_FILE`，按 `common.md` 判定响应后按下表处理。
 4. 把当前 `offerId` 和用户追问所需的基本事实存入会话状态。
 

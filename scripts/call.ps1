@@ -32,6 +32,16 @@ if ([string]::IsNullOrWhiteSpace($OutputFile)) { $OutputFile = Join-Path $respon
 $requestFile = Join-Path $requestDir ($RequestId + '.request')
 $outputDir = Split-Path -Parent $OutputFile
 
+# Client ID: read LOCAL_CLIENT_ID from config\client.conf and send it as the X-Skill-Client-Id header (used by the server for tracking).
+# Only a 24-char hex value is sent; if it is missing or malformed the header is left out and the server treats the call as anonymous.
+$clientId = ''
+$clientConf = Join-Path $PSScriptRoot '..\config\client.conf'
+if (Test-Path -LiteralPath $clientConf) {
+    foreach ($confLine in [System.IO.File]::ReadAllLines($clientConf)) {
+        if ($confLine -match '^LOCAL_CLIENT_ID=\s*([0-9a-fA-F]{24})\s*$') { $clientId = $Matches[1]; break }
+    }
+}
+
 function Write-FileAtomic([string]$Source, [string]$Target) {
     $targetDir = Split-Path -Parent $Target
     if (-not [string]::IsNullOrWhiteSpace($targetDir)) { New-Item -ItemType Directory -Path $targetDir -Force | Out-Null }
@@ -82,6 +92,7 @@ try {
             '-H', 'Content-Type: application/json',
             '--connect-timeout', '5', '--max-time', [string]$TimeoutSeconds
         )
+        if ($clientId -ne '') { $curlArgs += @('-H', "X-Skill-Client-Id: $clientId") }
         if (-not [string]::IsNullOrWhiteSpace($DataFile) -or -not [string]::IsNullOrWhiteSpace($Data)) {
             $curlArgs += @('--data-binary', "@$requestFile")
         }

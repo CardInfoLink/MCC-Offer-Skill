@@ -55,23 +55,9 @@ powershell -NoProfile -File scripts\init.ps1 -BaseUrl https://offer.example.com
 
 脚本只把调用方已经组装好的 JSON 原样交给 curl，不执行远程脚本，不下载或覆盖 `scripts/` 与 `sub-skills/`，也不保存密钥。已安装的客户端同步失败时保留本地缓存；首次安装必须同步成功，否则 `init` 返回 `READY=NO` 并停止。接口协议和 AI 解释随 Skill 版本发布，运行时配置只同步纯数据和接口运行参数。
 
-## 仓库检查与平台发现
+## 平台直接发现
 
-源码仓库只维护一份核心 Skill；Claude Code、Cursor、OpenClaw 等平台直接从 GitHub 的分支或 Tag 发现入口，不要求先生成本地发行包。WorkBuddy ZIP、npm 包和 GitHub Release 资产属于后续可选分发渠道，当前不作为 CI 必需步骤。
-
-POSIX/Git Bash：
-
-```bash
-sh tools/release/check.sh
-```
-
-Windows PowerShell：
-
-```powershell
-powershell -NoProfile -File tools\release\check.ps1
-```
-
-检查内容包括 Skill frontmatter、根 `.claude-plugin/`、Marketplace source、WorkBuddy/npm 元数据、`config/client.conf` 本地状态、Shell/PowerShell 脚本语法和运行时数据边界。检查不会生成 ZIP、tgz、`dist/` 或其他发行目录。
+源码仓库只维护一份核心 Skill；Claude Code、Cursor、OpenClaw 等平台直接从 GitHub 分支或 Tag 发现入口，不要求先生成本地发行包。WorkBuddy ZIP、npm 包和 GitHub Release 资产属于后续可选分发渠道。
 
 平台发现入口：
 
@@ -83,4 +69,4 @@ powershell -NoProfile -File tools\release\check.ps1
 | WorkBuddy | 根 `manifest.yaml`、`SKILL.md` | `platforms/workbuddy/manifest.yaml` |
 | npm | 包根 `package.json`（可选） | `platforms/npm/package.json` |
 
-GitHub Release、CHANGELOG、Issue/PR 模板和 CI 校验位于 `.github/` 与 `docs/releases/`，仓库 Topics 需在 GitHub 仓库设置中维护。`config/client.conf` 当前由 CI 检查其提交状态为空；运行时可变状态拆分为独立忽略文件仍需单独完成，未在本次检查脚本改造中实现。
+GitHub Release、CHANGELOG、Issue/PR 模板和平台说明位于 `.github/` 与 `docs/releases/`，仓库 Topics 需在 GitHub 仓库设置中维护。运行时配置和本地状态不应提交到仓库。
