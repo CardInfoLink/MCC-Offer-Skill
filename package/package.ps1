@@ -167,9 +167,9 @@ $marketplaceJsonStr = $marketplaceObj | ConvertTo-Json -Depth 10
 $marketplaceJsonStr = FormatJsonWith2Spaces $marketplaceJsonStr
 WriteUtf8File (Join-Path $claudePluginDir 'marketplace.json') $marketplaceJsonStr
 
-# 从源复制 4 个目录：workbuddy、workbuddy-testing、doubaowor、doubaowor-testing
+# 从源复制 4 个目录：workbuddy、workbuddy-testing、doubaowork、doubaowork-testing
 # 然后分别处理
-foreach ($platform in @('workbuddy', 'doubaowor')) {
+foreach ($platform in @('workbuddy', 'doubaowork')) {
     foreach ($isTesting in @($false, $true)) {
         $DirName = if ($isTesting) { "mcc-offer-skill-$platform-testing" } else { "mcc-offer-skill-$platform" }
         $TargetDir = Join-Path $PackageDir $DirName
