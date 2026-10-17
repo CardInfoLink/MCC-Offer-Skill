@@ -185,7 +185,6 @@ $cursorPluginObj = [ordered]@{
     repository = "https://github.com/CardInfoLink/MCC-Offer-Skill"
     license = $licenseVal
     keywords = @("agent-skills", "mastercard", "credit-card", "offers")
-    skills = "."
 }
 $cursorPluginJsonStr = $cursorPluginObj | ConvertTo-Json -Depth 10
 $cursorPluginJsonStr = FormatJsonWith2Spaces $cursorPluginJsonStr
@@ -206,8 +205,7 @@ $cursorMarketplaceObj = [ordered]@{
             repository = "https://github.com/CardInfoLink/MCC-Offer-Skill"
             license = $licenseVal
             keywords = @("agent-skills", "mastercard", "credit-card", "offers")
-            skills = "."
-        }
+                }
     )
 }
 $cursorMarketplaceJsonStr = $cursorMarketplaceObj | ConvertTo-Json -Depth 10
