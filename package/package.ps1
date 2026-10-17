@@ -107,11 +107,11 @@ if (Test-Path -LiteralPath $claudePluginDir) {
 $null = New-Item -ItemType Directory -Path $claudePluginDir -Force
 
 # Create plugin.json
-$pluginObj = @{
+$pluginObj = [ordered]@{
     name = $Slug
     version = $Version
     description = $Description
-    author = @{ name = $Author }
+    author = [ordered]@{ name = $Author }
     homepage = $Homepage
     repository = "https://github.com/CardInfoLink/MCC-Offer-Skill"
     license = $licenseVal
@@ -147,15 +147,15 @@ $pluginJsonStr = FormatJsonWith2Spaces $pluginJsonStr
 WriteUtf8File (Join-Path $claudePluginDir 'plugin.json') $pluginJsonStr
 
 # Create marketplace.json
-$marketplaceObj = @{
+$marketplaceObj = [ordered]@{
     name = "$Slug-marketplace"
     description = "$DisplayName 插件目录。"
-    owner = @{ name = $Author }
+    owner = [ordered]@{ name = $Author }
     plugins = @(
-        @{
+        [ordered]@{
             name = $Slug
             description = $Description
-            author = @{ name = $Author }
+            author = [ordered]@{ name = $Author }
             category = $Category
             source = "."
             strict = $false
@@ -175,26 +175,35 @@ if (Test-Path -LiteralPath $cursorPluginDir) {
 $null = New-Item -ItemType Directory -Path $cursorPluginDir -Force
 
 # Cursor Plugin：根目录已有 SKILL.md，未指定 skills 字段时按 Cursor 单 Skill 插件处理
-$cursorPluginJsonStr = $pluginObj | ConvertTo-Json -Depth 10
+$cursorDescription = ($Description -replace '（如.*?）', '').Trim()
+$cursorPluginObj = [ordered]@{
+    name = $Slug
+    description = $cursorDescription
+    version = $Version
+    author = [ordered]@{ name = $Author }
+    homepage = $Homepage
+    repository = "https://github.com/CardInfoLink/MCC-Offer-Skill"
+    license = $licenseVal
+    keywords = @("agent-skills", "mastercard", "credit-card", "offers")
+}
+$cursorPluginJsonStr = $cursorPluginObj | ConvertTo-Json -Depth 10
 $cursorPluginJsonStr = FormatJsonWith2Spaces $cursorPluginJsonStr
 WriteUtf8File (Join-Path $cursorPluginDir 'plugin.json') $cursorPluginJsonStr
 
-# Cursor Marketplace：source 指向仓库根目录，解析根目录 .cursor-plugin/plugin.json 和 SKILL.md
-$cursorMarketplaceObj = @{
+# Cursor Marketplace：保持手写版本结构，source 指向仓库根目录
+$cursorMarketplaceObj = [ordered]@{
     name = "$Slug-marketplace"
-    description = "$DisplayName 插件目录。"
-    owner = @{ name = $Author }
+    owner = [ordered]@{ name = $Author }
     plugins = @(
-        @{
+        [ordered]@{
             name = $Slug
             source = "."
-            description = $Description
+            description = $cursorDescription
             version = $Version
-            author = @{ name = $Author }
+            author = [ordered]@{ name = $Author }
             homepage = $Homepage
             repository = "https://github.com/CardInfoLink/MCC-Offer-Skill"
             license = $licenseVal
-            category = $Category
             keywords = @("agent-skills", "mastercard", "credit-card", "offers")
         }
     )
