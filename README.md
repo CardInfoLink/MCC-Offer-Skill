@@ -2,6 +2,15 @@
 
 本仓库是 [CardInfoLink/MCC-Offer-Skill](https://github.com/CardInfoLink/MCC-Offer-Skill)，提供由万事达（Mastercard）提供、面向中国大陆用户的信用卡权益 Offer Skill。标准 Skill 标识为 `mcc-offer-skill`，平台发行包统一使用 `mcc-offer-skill/` 作为包目录。
 
+本仓库当前为**测试版**，仅用于 Skill 发行验收，不代表生产版本发布。
+
+当前 Git 提交和默认配置面向测试环境，`config/client.conf` 默认使用测试服务器地址：
+
+```text
+API_BASE_URL=https://offercent.ipay.so
+```
+
+生产环境地址不作为当前版本的默认配置。
 ## 目录
 
 - `SKILL.md`：启动前置和 query/detail/recommend/more 场景路由。

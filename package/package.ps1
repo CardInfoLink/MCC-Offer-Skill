@@ -214,49 +214,47 @@ $cursorMarketplaceJsonStr = $cursorMarketplaceObj | ConvertTo-Json -Depth 10
 $cursorMarketplaceJsonStr = FormatJsonWith2Spaces $cursorMarketplaceJsonStr
 WriteUtf8File (Join-Path $cursorPluginDir 'marketplace.json') $cursorMarketplaceJsonStr
 
-# 从源复制 4 个目录：workbuddy、workbuddy-testing、doubaowork、doubaowork-testing
-# 然后分别处理
+# 从源复制 2 个生产目录：workbuddy、doubaowork
 foreach ($platform in @('workbuddy', 'doubaowork')) {
-    foreach ($isTesting in @($false, $true)) {
-        $DirName = if ($isTesting) { "mcc-offer-skill-$platform-testing" } else { "mcc-offer-skill-$platform" }
-        $TargetDir = Join-Path $PackageDir $DirName
-        $null = New-Item -ItemType Directory -Path $TargetDir -Force
-        
-        # 复制源目录的所有子目录
-        foreach ($dir in @('scripts', 'sub-skills', 'config', 'references')) {
-            $src = Join-Path $SourceRoot $dir
-            $dst = Join-Path $TargetDir $dir
-            if (Test-Path -LiteralPath $src -PathType Container) {
-                $null = New-Item -ItemType Directory -Path $dst -Force
-                Get-ChildItem -LiteralPath $src -Force | ForEach-Object {
-                    Copy-Item -LiteralPath $_.FullName -Destination $dst -Recurse -Force
+    $DirName = "mcc-offer-skill-$platform"
+    $TargetDir = Join-Path $PackageDir $DirName
+    $null = New-Item -ItemType Directory -Path $TargetDir -Force
+
+    # 复制源目录的所有子目录
+    foreach ($dir in @('scripts', 'sub-skills', 'config', 'references')) {
+        $src = Join-Path $SourceRoot $dir
+        $dst = Join-Path $TargetDir $dir
+        if (Test-Path -LiteralPath $src -PathType Container) {
+            $null = New-Item -ItemType Directory -Path $dst -Force
+            Get-ChildItem -LiteralPath $src -Force | ForEach-Object {
+                Copy-Item -LiteralPath $_.FullName -Destination $dst -Recurse -Force
+            }
+        }
+    }
+
+    # ===== SKILL.md 处理 =====
+    if ($platform -eq 'workbuddy') {
+        # WorkBuddy：做 frontmatter 映射
+        $skillContent = Get-Content -LiteralPath $SkillMdPath -Raw -Encoding UTF8
+        $lines = $skillContent -split "`n"
+        $fmCount = 0
+        $bodyStartIdx = 0
+        for ($i = 0; $i -lt $lines.Count; $i++) {
+            if ($lines[$i] -match '^\s*---\s*$') {
+                $fmCount++
+                if ($fmCount -eq 2) {
+                    $bodyStartIdx = $i + 1
+                    break
                 }
             }
         }
-        
-        # ===== SKILL.md 处理 =====
-        if ($platform -eq 'workbuddy') {
-            # WorkBuddy：做 frontmatter 映射
-            $skillContent = Get-Content -LiteralPath $SkillMdPath -Raw -Encoding UTF8
-            $lines = $skillContent -split "`n"
-            $fmCount = 0
-            $bodyStartIdx = 0
-            for ($i = 0; $i -lt $lines.Count; $i++) {
-                if ($lines[$i] -match '^\s*---\s*$') {
-                    $fmCount++
-                    if ($fmCount -eq 2) {
-                        $bodyStartIdx = $i + 1
-                        break
-                    }
-                }
-            }
-            $body = if ($bodyStartIdx -gt 0 -and $bodyStartIdx -lt $lines.Count) { 
-                ($lines[$bodyStartIdx..($lines.Count-1)] -join "`n")
-            } else { 
-                "" 
-            }
-            
-            $skillFrontmatter = @"
+        $body = if ($bodyStartIdx -gt 0 -and $bodyStartIdx -lt $lines.Count) {
+            ($lines[$bodyStartIdx..($lines.Count-1)] -join "`n")
+        } else {
+            ""
+        }
+
+        $skillFrontmatter = @"
 ---
 name: $Slug
 display_name: $DisplayName
@@ -266,42 +264,30 @@ version: $Version
 author: $Author
 ---
 "@
-            
-            $skillMdContent = $skillFrontmatter + $body
-        } else {
-            # DouBaoWork：SKILL.md 保持原始，直接复制
-            $skillMdContent = Get-Content -LiteralPath $SkillMdPath -Raw -Encoding UTF8
-        }
-        
-        $skillMdDst = Join-Path $TargetDir 'SKILL.md'
-        WriteUtf8File $skillMdDst $skillMdContent
-        
-        # ===== 测试模式改配置 =====
-        if ($isTesting) {
-            $clientConfPath = Join-Path (Join-Path $TargetDir 'config') 'client.conf'
-            if (Test-Path -LiteralPath $clientConfPath) {
-                $confContent = Get-Content -LiteralPath $clientConfPath -Raw -Encoding UTF8
-                $confContent = $confContent.Replace('https://offercent.azpromotion.com', 'https://offercent.ipay.so')
-                WriteUtf8File $clientConfPath $confContent
-            }
-        }
-        
-        # ===== 打包 ZIP =====
-        $ZipFileName = if ($isTesting) { "mcc-offer-skill-$platform-testing.zip" } else { "mcc-offer-skill-$platform.zip" }
-        $ZipPath = Join-Path $PackageDir $ZipFileName
-        
-        Push-Location $TargetDir
-        try {
-            $items = Get-ChildItem -LiteralPath $TargetDir -Force
-            Compress-Archive -Path $items -DestinationPath $ZipPath -Force
-        } finally {
-            Pop-Location
-        }
-        
-        $TestingLabel = if ($isTesting) { "TESTING" } else { "PRODUCTION" }
-        $PlatformLabel = if ($platform -eq 'workbuddy') { "WorkBuddy" } else { "DouBaoWork" }
-        Write-Host "$PlatformLabel $TestingLabel PACKAGE: $ZipFileName"
+
+        $skillMdContent = $skillFrontmatter + $body
+    } else {
+        # DouBaoWork：SKILL.md 保持原始，直接复制
+        $skillMdContent = Get-Content -LiteralPath $SkillMdPath -Raw -Encoding UTF8
     }
+
+    $skillMdDst = Join-Path $TargetDir 'SKILL.md'
+    WriteUtf8File $skillMdDst $skillMdContent
+
+    # ===== 打包生产 ZIP =====
+    $ZipFileName = "mcc-offer-skill-$platform.zip"
+    $ZipPath = Join-Path $PackageDir $ZipFileName
+
+    Push-Location $TargetDir
+    try {
+        $items = Get-ChildItem -LiteralPath $TargetDir -Force
+        Compress-Archive -Path $items -DestinationPath $ZipPath -Force
+    } finally {
+        Pop-Location
+    }
+
+    $PlatformLabel = if ($platform -eq 'workbuddy') { "WorkBuddy" } else { "DouBaoWork" }
+    Write-Host "$PlatformLabel PRODUCTION PACKAGE: $ZipFileName"
 }
 
 Write-Host ""
@@ -311,10 +297,10 @@ Write-Host ("DISPLAY_NAME=" + $DisplayName)
 Write-Host ("VERSION=" + $Version)
 Write-Host ("SLUG=" + $Slug)
 Write-Host ("CATEGORY=" + $Category)
-Write-Host ("PRODUCTION_DIR=" + (Join-Path $PackageDir "mcc-offer-skill-workbuddy"))
-Write-Host ("PRODUCTION_ZIP=" + (Join-Path $PackageDir "mcc-offer-skill-workbuddy.zip"))
-Write-Host ("TESTING_DIR=" + (Join-Path $PackageDir "mcc-offer-skill-workbuddy-testing"))
-Write-Host ("TESTING_ZIP=" + (Join-Path $PackageDir "mcc-offer-skill-workbuddy-testing.zip"))
+Write-Host ("WORKBUDDY_PRODUCTION_DIR=" + (Join-Path $PackageDir "mcc-offer-skill-workbuddy"))
+Write-Host ("WORKBUDDY_PRODUCTION_ZIP=" + (Join-Path $PackageDir "mcc-offer-skill-workbuddy.zip"))
+Write-Host ("DOUBAOWORK_PRODUCTION_DIR=" + (Join-Path $PackageDir "mcc-offer-skill-doubaowork"))
+Write-Host ("DOUBAOWORK_PRODUCTION_ZIP=" + (Join-Path $PackageDir "mcc-offer-skill-doubaowork.zip"))
 Write-Host ("CLAUDE_PLUGIN=" + $claudePluginDir)
 Write-Host ("CURSOR_PLUGIN=" + $cursorPluginDir)
 Write-Host "PACKAGE=SUCCESS"
