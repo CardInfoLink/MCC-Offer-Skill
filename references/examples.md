@@ -31,7 +31,7 @@ Content-Type: application/json
     }
   ],
   "filters": {
-    "regions": ["HK"]
+    "regions": ["香港"]
   }
 }
 ```
@@ -60,7 +60,7 @@ Content-Type: application/json
       }
     ],
     "totalCount": 47,
-    "queryCacheId": "cache_hk_dining_20261016",
+    "queryCacheId": "cache_dining_20261016",
     "currentPage": 1,
     "totalPages": 10,
     "hasMore": true,
@@ -80,7 +80,7 @@ Content-Type: application/json
   "searchInfo": "品牌或商户关键词",
   "intentTags": [],
   "filters": {
-    "regions": ["HK"]
+    "regions": ["香港"]
   }
 }
 ```
@@ -135,7 +135,7 @@ GET {BASE_URL}/api/offer/detail/507f1f77bcf86cd799439011
     "merchantName": "商户名称",
     "benefitType": "discount",
     "banks": ["Mastercard"],
-    "regions": ["HK"],
+    "regions": ["香港"],
     "startTime": "2026-01-01T00:00:00Z",
     "endTime": "2026-12-31T23:59:59Z",
     "eligibilityRequirement": "资格要求说明",
@@ -187,7 +187,7 @@ Content-Type: application/json
 
 ```json
 {
-  "queryCacheId": "cache_hk_dining_20261016",
+  "queryCacheId": "cache_dining_20261016",
   "page": 2,
   "searchInfo": "",
   "intentTags": [
@@ -197,7 +197,7 @@ Content-Type: application/json
     }
   ],
   "filters": {
-    "regions": ["HK"]
+    "regions": ["香港"]
   }
 }
 ```
@@ -243,7 +243,7 @@ Content-Type: application/json
     }
   ],
   "filters": {
-    "regions": ["HK"]
+    "regions": ["香港"]
   }
 }
 ```
@@ -307,14 +307,15 @@ Content-Type: application/json
 
 ---
 
-## 地区代码参考
+## 地区值参考
 
-| 代码 | 地区 |
+地区过滤值直接使用 `config/regions.txt` 中的中文地区名称，不使用地区代码。
+
+| 地区值 | 说明 |
 |------|------|
-| `CN` | 中国内地 |
-| `HK` | 香港 |
-| `MO` | 澳门 |
-| `TW` | 台湾 |
+| `香港` | 当前配置示例 |
+| `台湾` | 当前配置示例 |
+| `新加坡` | 当前配置示例 |
 | 更多 | 见 `config/regions.txt` |
 
 ---

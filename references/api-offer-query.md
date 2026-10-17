@@ -20,7 +20,7 @@
 | `intentTags[].matchScore` | integer | 是 | 1-100，表示用户意图强度，**不是** Offer 排序得分 |
 | `filters` | object / null | 否 | 事实条件对象；无条件时传 `null` |
 | `filters.banks` | string[] | 否 | 银行代码数组，**必须来自** `config/banks.txt`（如 `["ICBC", "ABC"]`） |
-| `filters.regions` | string[] | 否 | 地区代码数组（如 `["HK", "CN"]`） |
+| `filters.regions` | string[] | 否 | 地区名称数组，值应来自 `config/regions.txt`（如 `["香港", "台湾"]`） |
 | `filters.timeRange` | object | 否 | 时间范围过滤 |
 | `filters.timeRange.start` | string | 否 | 开始日期（`yyyy-MM-dd` 格式）；格式不对或起止颠倒时服务端忽略整段 |
 | `filters.timeRange.end` | string | 否 | 结束日期（`yyyy-MM-dd` 格式） |
@@ -34,7 +34,7 @@
   "searchInfo": "星巴克",
   "intentTags": [],
   "filters": {
-    "regions": ["HK"]
+    "regions": ["香港"]
   }
 }
 ```
@@ -56,7 +56,7 @@
   ],
   "filters": {
     "banks": ["ABC"],
-    "regions": ["HK"],
+    "regions": ["香港"],
     "timeRange": {
       "start": "2026-10-01",
       "end": "2026-12-31"
@@ -72,7 +72,7 @@
   "searchInfo": "",
   "intentTags": [],
   "filters": {
-    "regions": ["HK"]
+    "regions": ["香港"]
   }
 }
 ```
@@ -123,7 +123,7 @@
       }
     ],
     "totalCount": 47,
-    "queryCacheId": "cache_hk_dining_20261016",
+    "queryCacheId": "cache_dining_20261016",
     "currentPage": 1,
     "totalPages": 10,
     "hasMore": true,
@@ -187,4 +187,3 @@
 | 400 | 请求参数格式错误 |
 | 500 | 服务器错误 |
 | 503 | 服务暂时不可用 |
-

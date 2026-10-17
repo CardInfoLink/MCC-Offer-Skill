@@ -127,6 +127,7 @@ function Post-Json([string]$Url, [string]$Json, [int]$Timeout) {
     $psi.RedirectStandardError = $true
     $psi.StandardOutputEncoding = [System.Text.Encoding]::UTF8
     $psi.CreateNoWindow = $true
+    [Console]::InputEncoding = New-Object System.Text.UTF8Encoding($false)
     $proc = [System.Diagnostics.Process]::Start($psi)
     $bytes = (New-Object System.Text.UTF8Encoding($false)).GetBytes($Json)
     $proc.StandardInput.BaseStream.Write($bytes, 0, $bytes.Length)

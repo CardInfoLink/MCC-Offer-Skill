@@ -32,7 +32,7 @@ GET {BASE_URL}/api/offer/detail/507f1f77bcf86cd799439011
 | `data.merchantName` | string | 商户名称 |
 | `data.benefitType` | string | 权益类型（如 `cashback`、`discount`） |
 | `data.banks[]` | string[] | 适用银行列表 |
-| `data.regions[]` | string[] | 适用地区列表 |
+| `data.regions[]` | string[] | 适用地区列表，值来自 `config/regions.txt` |
 | `data.startTime` | string | 生效时间（ISO 8601） |
 | `data.endTime` | string | 失效时间（ISO 8601） |
 | `data.eligibilityRequirement` | string | 资格要求描述 |
@@ -57,7 +57,7 @@ GET {BASE_URL}/api/offer/detail/507f1f77bcf86cd799439011
     "merchantName": "Starbucks",
     "benefitType": "discount",
     "banks": ["Mastercard"],
-    "regions": ["HK"],
+    "regions": ["香港"],
     "startTime": "2026-01-01T00:00:00Z",
     "endTime": "2026-12-31T23:59:59Z",
     "eligibilityRequirement": "持有有效万事达卡，无特殊资格限制",

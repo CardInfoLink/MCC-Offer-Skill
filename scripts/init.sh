@@ -44,6 +44,21 @@ while [ "$#" -gt 0 ]; do
 done
 
 CLIENT_FILE="$CONFIG_DIR/client.conf"
+
+# 在脚本开头一次性清 UTF-8 BOM，后续所有读操作都用干净的文件，不用到处 sed
+cleanup_bom_once() {
+    [ -f "$CLIENT_FILE" ] || return 0
+    # 检查文件是否有 BOM（前 3 字节是 EF BB BF）
+    first_bytes=$(od -An -tx1 -N3 "$CLIENT_FILE" 2>/dev/null | tr -d ' \n')
+    if [ "$first_bytes" = "efbbbf" ]; then
+        BOM_TEMP="$CONFIG_DIR/.client.conf.nobom.$$"
+        sed '1s/^\xEF\xBB\xBF//' "$CLIENT_FILE" > "$BOM_TEMP" 2>/dev/null || return 1
+        mv -f "$BOM_TEMP" "$CLIENT_FILE" || return 1
+    fi
+    return 0
+}
+cleanup_bom_once
+
 get_value() {
     key=$1
     file=$2
