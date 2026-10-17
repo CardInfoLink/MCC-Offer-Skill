@@ -1,81 +1,97 @@
 # MCC Offer Skill
 
-本仓库是 [CardInfoLink/MCC-Offer-Skill](https://github.com/CardInfoLink/MCC-Offer-Skill)，提供由万事达（Mastercard）提供、面向中国大陆用户的信用卡权益 Offer Skill。标准 Skill 标识为 `mcc-offer-skill`，平台发行包统一使用 `mcc-offer-skill/` 作为包目录。
+本仓库是 [CardInfoLink/MCC-Offer-Skill](https://github.com/CardInfoLink/MCC-Offer-Skill)，提供面向中国大陆用户的万事达信用卡权益 Offer Skill。标准 Skill 标识为 `mcc-offer-skill`。
 
-本仓库当前为**测试版**，仅用于 Skill 发行验收，不代表生产版本发布。
-
-当前 Git 提交和默认配置面向测试环境，`config/client.conf` 默认使用测试服务器地址：
+本仓库当前为**测试版**，仅用于 Skill 发行验收，不代表生产版本发布。当前 Git 提交和默认配置面向测试环境，`config/client.conf` 默认使用：
 
 ```text
 API_BASE_URL=https://offercent.ipay.so
 ```
 
-生产环境地址不作为当前版本的默认配置。
-## 目录
+当前不生成独立 Testing 包；WorkBuddy、DouBaoWork 的生产命名 ZIP 和 GitHub/Cursor/Claude Code 安装版本均仅用于测试验收。
 
-- `SKILL.md`：启动前置和 query/detail/recommend/more 场景路由。
-- `sub-skills/common.md`：所有能力共用的运行约定：脚本、调用模板与参数、请求 ID 与临时文件、响应判定、会话状态、清理。
-- `sub-skills/query.md`：事实条件提取、主题判定（查询词 / 意图标签 / 无主题）和请求组装。
-- `sub-skills/detail.md`：详情能力流程（含详情展示，不依赖 `result.md`）。
-- `sub-skills/recommend.md`：相似推荐能力流程。
-- `sub-skills/more.md`：分页能力流程。
-- `sub-skills/result.md`：查询、分页、相似推荐共用的列表展示规则。
-- `sub-skills/api/`：按接口拆分的请求/响应字段契约；脚本调用模板统一在 `common.md`。
-- `scripts/`：POSIX Shell、Windows PowerShell 双实现的运行时脚本，只有三个：`init`（启动入口，环境检查 + 配置同步）、`call`（接口调用）、`clean`（临时数据清理）；配置同步不留请求/响应文件。
-- `config/data/req/`：运行时请求体目录，按请求 ID 保存请求文件，不提交 Git。
-- `config/data/res/`：运行时响应体目录，按请求 ID 保存响应文件，不提交 Git。
-- `config/`：API 地址/路径、本地状态和纯数据字典；`client.conf` 随 Skill 提供，首次同步前部分值为空。
-- `platforms/claude-code/README.md`：Claude Code 本地插件、Marketplace 和验收说明；仓库根 `.claude-plugin/` 提供 Claude Code 的发现元数据。
-- `test/`：验证脚本，不属于正式运行时脚本目录。
+## 核心结构
 
-## 接口文档位置
+- `SKILL.md`：标准 Agent Skill 入口，负责范围判断、会话初始化、场景路由、脚本调用契约和安全边界。
+- `sub-skills/common.md`：脚本参数、JSON 文件入参、请求 ID、响应判定、会话状态和清理。
+- `sub-skills/query.md`：查询词/意图标签/无主题判定、事实条件提取和查询请求组装。
+- `sub-skills/detail.md`：Offer 详情查询与展示。
+- `sub-skills/recommend.md`：相似 Offer 推荐。
+- `sub-skills/more.md`：分页查询和会话条件复用。
+- `sub-skills/result.md`：查询、分页、相似推荐的列表展示规则。
+- `references/`：按需读取的非可执行接口契约和参考资料，包括 `api-offer-query.md`、`api-offer-detail.md`、`api-offer-recommend.md`、`api-offer-more.md`。
+- `scripts/`：POSIX Shell 和 Windows PowerShell 双实现，只有 `init`、`call`、`clean` 三类脚本。
+- `config/`：接口地址、客户端状态和纯数据字典；`config/data/req/`、`config/data/res/` 用于运行时请求/响应临时文件。
+- `.claude-plugin/`：Claude Code 插件和 Marketplace 元数据。
+- `.cursor-plugin/`：Cursor 插件和 Marketplace 元数据；根目录 `SKILL.md` 自动作为单 Skill 发现。
+- `package/`：生成 WorkBuddy、DouBaoWork 测试发行 ZIP 的脚本。
+- `docs/`：安装和兼容环境说明。
 
-接口级的请求/响应字段统一放在 `sub-skills/api/`：
+## 平台安装入口
 
-- `api/offer-query.md`：查询接口。
-- `api/offer-detail.md`：详情接口。
-- `api/offer-recommend.md`：相似推荐接口。
-- `api/offer-more.md`：分页接口。
+### Claude Code
 
-脚本调用模板（POSIX / PowerShell）、参数、退出码都在 `sub-skills/common.md`；启动入口 `init` 的输出和 `READY` 判定在 `SKILL.md` 的“启动前置”。能力子 SKILL 进入时一次性读取 `common.md` 和自己对应的接口文档，不加载其他场景的文档。
+通过仓库根目录 `.claude-plugin/` 的 Marketplace 元数据导入 GitHub 仓库。安装后由 Claude Code 加载根目录 `SKILL.md` 及其随版本分发的脚本、子 Skill 和参考资料。
 
-## 快速开始
+### Cursor
 
-POSIX/Git Bash：
+在 Cursor Customize 中使用 **From GitHub Repository** 导入：
+
+```text
+https://github.com/CardInfoLink/MCC-Offer-Skill
+```
+
+安装 `mcc-offer-skill` 后，进入插件详情页确认显示 `Skills 1`，再到 `Customize → Skills` 确认 Skill 可用。仓库根目录 `.cursor-plugin/marketplace.json` 的插件来源为 `.`，`.cursor-plugin/plugin.json` 不声明 `skills` 字段，由 Cursor 按根目录 `SKILL.md` 发现单个 Skill。
+
+### OpenClaw
+
+将仓库作为 Skill 目录安装，保留根目录 `SKILL.md`、`sub-skills/`、`scripts/`、`config/` 和 `references/`。运行时按宿主环境选择 `scripts/init.sh` 或 `scripts/init.ps1`，不要调用不存在的查询脚本，也不要绕过 `call` 脚本直接请求接口。
+
+### WorkBuddy / DouBaoWork
+
+运行 `package/package.ps1` 或 `package/package.sh` 生成：
+
+```text
+dist/mcc-offer-skill-workbuddy.zip
+dist/mcc-offer-skill-doubaowork.zip
+```
+
+两个包使用生产命名，但当前默认服务端指向测试环境，仅用于测试验收。
+
+## 运行约定
+
+POSIX/Git Bash/WSL：
 
 ```sh
-sh scripts/init.sh --base-url https://offer.example.com
-sh test/verify-posix.sh
+sh scripts/init.sh
+sh scripts/call.sh \
+  --method POST \
+  --url "${API_BASE_URL}${API_QUERY_PATH}" \
+  --data-file "<UTF-8 无 BOM JSON 文件>" \
+  --request-id "query-<唯一值>"
+sh scripts/clean.sh --request-id "query-<唯一值>"
 ```
 
 Windows PowerShell：
 
 ```powershell
-powershell -NoProfile -File scripts\init.ps1 -BaseUrl https://offer.example.com
+& .\scripts\init.ps1
+& .\scripts\call.ps1 `
+  -Method POST `
+  -Url ($apiBaseUrl + $apiPath) `
+  -DataFile "<UTF-8 无 BOM JSON 文件>" `
+  -RequestId "query-<唯一值>"
+& .\scripts\clean.ps1 -RequestId "query-<唯一值>"
 ```
 
-首次同步后，AI 编程工具按 `SKILL.md` 路由到能力子 SKILL；能力子 SKILL 再加载对应接口契约，通过 `call` 脚本请求服务端，并根据请求 ID 从 `config/data/req/` 和 `config/data/res/` 读取请求/响应原文。解析并保存上下文、完成回复后，调用 `clean` 脚本删除本次临时文件。
+首次进入 Skill 会话必须先运行 `init` 并确认 `READY=YES`。业务请求必须使用 `call`，请求 JSON 必须写入 UTF-8 无 BOM 文件并通过 `--data-file`/`-DataFile`传入；禁止使用 `query.ps1`、`query.sh` 或直接调用 curl/API。脚本退出失败、响应文件不存在、响应无法解析或顶层 `code` 不是 `S000000` 时停止当前链路，不编造权益结果。`isDefault=true` 必须向用户说明为参考推荐，不是精确匹配。
 
-## 服务端接口
+## 配置和安全
 
-服务端参考实现为 `EverySkill`：配置同步是 `POST /api/offer/config`，业务接口为 `POST /api/offer/query`、`GET /api/offer/detail/{id}`、`POST /api/offer/recommend` 和 `POST /api/offer/more`。业务接口返回 `code/msg/data` 结构。
+`config/client.conf` 默认提供测试服务地址，首次同步后由脚本回写 `LOCAL_CLIENT_ID`、`LOCAL_CONFIG_VERSION` 和 `LOCAL_LAST_SYNC_DATE`。配置同步只处理 `config/` 下的纯数据；`SKILL.md`、`sub-skills/`、`scripts/` 和 `references/` 不由运行时远程覆盖。
 
-## 安全边界
+脚本不保存密钥、Cookie、Bearer Token 或用户隐私，不下载或执行远程脚本/提示词，不把用户自然语言直接拼进命令。详细安装和兼容要求见：
 
-脚本只把调用方已经组装好的 JSON 原样交给 curl，不执行远程脚本，不下载或覆盖 `scripts/` 与 `sub-skills/`，也不保存密钥。已安装的客户端同步失败时保留本地缓存；首次安装必须同步成功，否则 `init` 返回 `READY=NO` 并停止。接口协议和 AI 解释随 Skill 版本发布，运行时配置只同步纯数据和接口运行参数。
-
-## 平台直接发现
-
-源码仓库只维护一份核心 Skill；Claude Code、Cursor、OpenClaw 等平台直接从 GitHub 分支或 Tag 发现入口，不要求先生成本地发行包。WorkBuddy ZIP、npm 包和 GitHub Release 资产属于后续可选分发渠道。
-
-平台发现入口：
-
-| 平台 | GitHub/运行时入口 | 适配说明 |
-| --- | --- | --- |
-| Claude Code | 根 `.claude-plugin/`、Marketplace `source` | `platforms/claude-code/README.md` |
-| Cursor | `.cursor/skills/mcc-offer-skill/SKILL.md` | `platforms/cursor/README.md` |
-| OpenClaw | `skills/mcc-offer-skill/SKILL.md` | `platforms/openclaw/README.md` |
-| WorkBuddy | 根 `manifest.yaml`、`SKILL.md` | `platforms/workbuddy/manifest.yaml` |
-| npm | 包根 `package.json`（可选） | `platforms/npm/package.json` |
-
-GitHub Release、CHANGELOG、Issue/PR 模板和平台说明位于 `.github/` 与 `docs/releases/`，仓库 Topics 需在 GitHub 仓库设置中维护。运行时配置和本地状态不应提交到仓库。
+- `docs/install.md`
+- `docs/compatibility.md`
+- `references/README.md`
