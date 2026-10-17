@@ -26,8 +26,8 @@
 ## 调用流程
 
 1. 从 `client.conf` 读 `API_BASE_URL` 和对应的 `API_*_PATH`。
-2. 按目标接口文档（`references/api-offer-*.md`）组装请求 JSON，**直接写进脚本命令的 `--data`，不在回复里展示**。自然语言解析由 AI 在本地完成，脚本不改变请求结构。
-3. 生成**请求 ID**（规则见下）并显式传给 `call`，按下面的模板调用。
+2. 按目标接口文档（`references/api-offer-*.md`）组装请求 JSON，先生成 UTF-8 无 BOM 的 JSON 文件；**禁止把 JSON 字符串直接嵌入脚本命令**。自然语言解析由 AI 在本地完成，脚本不改变请求结构。
+3. 生成**请求 ID**（规则见下）并显式传给 `call`，按下面的模板使用 `--data-file` / `-DataFile` 调用。
 4. 从标准输出读 `REQUEST_ID`、`RESPONSE_FILE`、`HTTP_STATUS`、`EXIT_CODE`，**读取 `RESPONSE_FILE` 原文**；不依赖聊天窗口里的输出，`REQUEST_FILE` 只用于复盘。
 5. 按“响应判定”处理，再交给 `result.md`（详情由 `detail.md` 自己展示）。
 6. 保存会话状态 → 完成回复 → 清理临时文件。
@@ -38,8 +38,8 @@
 |---|---|---|
 | `--method` | `-Method` | `GET` / `POST` / `PUT` / `PATCH` / `DELETE` |
 | `--url` | `-Url` | 完整接口地址 |
-| `--data` | `-Data` | JSON 字符串，与 `--data-file` 二选一 |
-| `--data-file` | `-DataFile` | JSON 文件路径，与 `--data` 二选一 |
+| `--data` | `-Data` | **禁止使用**：不得直接把 JSON 字符串作为命令参数传入 |
+| `--data-file` | `-DataFile` | **必须使用**：UTF-8 无 BOM JSON 文件路径 |
 | `--request-id` | `-RequestId` | 请求 ID，**必须显式传入**，缺少时返回退出码 `14`，不会自动生成 |
 | `--output-file` | `-OutputFile` | 原始响应保存位置，缺省写入 `config/data/res/{请求ID}.response` |
 | `--timeout` | `-TimeoutSeconds` | 单次请求超时，默认 30 秒 |
@@ -73,13 +73,13 @@ POSIX（POST）：
 ```sh
 API_BASE_URL='<client.conf 的 API_BASE_URL>'
 API_PATH='<client.conf 里上表对应的路径键的值>'
-REQUEST_JSON='{"example":"value"}'
+REQUEST_FILE='<已生成的 UTF-8 无 BOM JSON 文件>'
 REQUEST_ID="query-$(date +%Y%m%d%H%M%S)-$$"
 
 sh scripts/call.sh \
   --method POST \
   --url "${API_BASE_URL}${API_PATH}" \
-  --data "$REQUEST_JSON" \
+  --data-file "$REQUEST_FILE" \
   --request-id "$REQUEST_ID"
 ```
 
@@ -88,13 +88,13 @@ PowerShell（POST）：
 ```powershell
 $apiBaseUrl = '<client.conf 的 API_BASE_URL>'
 $apiPath = '<client.conf 里上表对应的路径键的值>'
-$requestJson = '{"example":"value"}'
+$requestFile = '<已生成的 UTF-8 无 BOM JSON 文件>'
 $requestId = 'query-' + (Get-Date).ToString('yyyyMMddHHmmss') + '-' + $PID
 
 & .\scripts\call.ps1 `
   -Method POST `
   -Url ($apiBaseUrl + $apiPath) `
-  -Data $requestJson `
+  -DataFile $requestFile `
   -RequestId $requestId
 ```
 
@@ -102,12 +102,11 @@ $requestId = 'query-' + (Get-Date).ToString('yyyyMMddHHmmss') + '-' + $PID
 
 ### 引号安全
 
-请求 JSON 里会出现用户说的文字（查询词），它会被放进单引号字符串，所以：
+请求 JSON 先写入 UTF-8 无 BOM 文件，再通过 `--data-file` / `-DataFile` 传给 `call`，不把 JSON 嵌入 Shell 命令，不依赖 Shell 引号转义。
 
-- 单引号、双引号、反引号、`$`、反斜杠、分号、竖线、`&`、换行等特殊字符不要原样带入；查询词在生成阶段就应去掉这些字符（见 `query.md`）。
-- PowerShell 的单引号字符串里，如确需保留 `'`，写成 `''`。
-- 绝不把用户文字拼进 shell 命令的其他位置。
-
+- 查询词中的特殊字符仍按 `query.md` 的规则清理；
+- 不把用户文字拼进脚本命令的 URL、参数名、请求 ID 或其他位置；
+- JSON 文件只允许包含接口契约定义的请求字段。
 ## 请求 ID 与临时文件
 
 每次 `call` 都有一个**请求 ID**，请求体和服务端原始响应分别落盘，用同一个请求 ID 关联。临时文件只负责留痕，**不是会话记忆**。

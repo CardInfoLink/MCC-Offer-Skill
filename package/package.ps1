@@ -167,6 +167,42 @@ $marketplaceJsonStr = $marketplaceObj | ConvertTo-Json -Depth 10
 $marketplaceJsonStr = FormatJsonWith2Spaces $marketplaceJsonStr
 WriteUtf8File (Join-Path $claudePluginDir 'marketplace.json') $marketplaceJsonStr
 
+# 自动更新 .cursor-plugin 目录
+$cursorPluginDir = Join-Path $SourceRoot '.cursor-plugin'
+if (Test-Path -LiteralPath $cursorPluginDir) {
+    Remove-Item -LiteralPath $cursorPluginDir -Recurse -Force
+}
+$null = New-Item -ItemType Directory -Path $cursorPluginDir -Force
+
+# Cursor Plugin：根目录已有 SKILL.md，未指定 skills 字段时按 Cursor 单 Skill 插件处理
+$cursorPluginJsonStr = $pluginObj | ConvertTo-Json -Depth 10
+$cursorPluginJsonStr = FormatJsonWith2Spaces $cursorPluginJsonStr
+WriteUtf8File (Join-Path $cursorPluginDir 'plugin.json') $cursorPluginJsonStr
+
+# Cursor Marketplace：source 指向仓库根目录，解析根目录 .cursor-plugin/plugin.json 和 SKILL.md
+$cursorMarketplaceObj = @{
+    name = "$Slug-marketplace"
+    description = "$DisplayName 插件目录。"
+    owner = @{ name = $Author }
+    plugins = @(
+        @{
+            name = $Slug
+            source = "."
+            description = $Description
+            version = $Version
+            author = @{ name = $Author }
+            homepage = $Homepage
+            repository = "https://github.com/CardInfoLink/MCC-Offer-Skill"
+            license = $licenseVal
+            category = $Category
+            keywords = @("agent-skills", "mastercard", "credit-card", "offers")
+        }
+    )
+}
+$cursorMarketplaceJsonStr = $cursorMarketplaceObj | ConvertTo-Json -Depth 10
+$cursorMarketplaceJsonStr = FormatJsonWith2Spaces $cursorMarketplaceJsonStr
+WriteUtf8File (Join-Path $cursorPluginDir 'marketplace.json') $cursorMarketplaceJsonStr
+
 # 从源复制 4 个目录：workbuddy、workbuddy-testing、doubaowork、doubaowork-testing
 # 然后分别处理
 foreach ($platform in @('workbuddy', 'doubaowork')) {
@@ -269,4 +305,5 @@ Write-Host ("PRODUCTION_ZIP=" + (Join-Path $PackageDir "mcc-offer-skill-workbudd
 Write-Host ("TESTING_DIR=" + (Join-Path $PackageDir "mcc-offer-skill-workbuddy-testing"))
 Write-Host ("TESTING_ZIP=" + (Join-Path $PackageDir "mcc-offer-skill-workbuddy-testing.zip"))
 Write-Host ("CLAUDE_PLUGIN=" + $claudePluginDir)
+Write-Host ("CURSOR_PLUGIN=" + $cursorPluginDir)
 Write-Host "PACKAGE=SUCCESS"

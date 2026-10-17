@@ -129,7 +129,7 @@
 
 见 `references/api-offer-query.md` 的"三种请求形态"，本文生成的 `searchInfo` / `intentTags` / `filters` 直接对应这三种形态。
 
-请求 JSON **不在回复里写出来**：不展示、不复述、不先起草再抄，直接作为 `--data` 参数写进脚本命令（见 `common.md` 的"调用模板"）。下面只是格式示例。
+请求 JSON **不在回复里写出来**：先生成 UTF-8 无 BOM 的临时 JSON 文件，再按照 `common.md` 的“调用模板”通过 `--data-file` / `-DataFile` 传给 `call`；不得把 JSON 字符串直接嵌入脚本命令。下面只是结构示例。
 
 ```json
 {"searchInfo":"星巴克","filters":{"regions":["香港"]}}
@@ -158,7 +158,7 @@
 
 ## ⑤⑥ 调用、保存与展示
 
-1. 按 `references/api-offer-query.md` 的请求字段，把 JSON 直接写进 `common.md` "调用模板"的 `--data` 参数调用，请求 ID 前缀 `query-`。
+1. 按 `references/api-offer-query.md` 的请求字段生成 UTF-8 无 BOM JSON 文件，按照 `common.md` 的“调用模板”使用 `--data-file` / `-DataFile` 调用，请求 ID 前缀 `query-`。
 2. 读取 `RESPONSE_FILE`，按 `common.md` 的响应判定处理。
 3. 成功后把 `queryCacheId`、**合并后实际发送的** `searchInfo` 或 `intentTags` 和 `filters`（并标明其中哪些是沿用的）、分页状态和已展示 Offer 存入会话状态。
 4. 按 `result.md` 生成最终回复；用户要更多时转 `more.md`，复用已保存的原始条件，不重新解析原始需求。
